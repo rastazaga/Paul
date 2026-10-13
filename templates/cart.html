@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Your cart | {{ site_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>Your cart</h1>
+    {% if cart.lines %}
+      <p class="muted" style="margin-bottom:20px">Ordering from <a class="tag" href="{{ url_for('shop_detail', slug=cart.vendor.slug) }}">{{ cart.vendor.name }}</a></p>
+      <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Item</th><th class="num">Price</th><th>Quantity</th><th class="num">Total</th></tr></thead>
+        <tbody>
+        {% for l in cart.lines %}
+          <tr>
+            <td>{{ l.product.name }}{% if not l.product.in_stock %} <span class="tag off">Out of stock</span>{% endif %}</td>
+            <td class="num">{{ l.product.price|ugx }}</td>
+            <td>
+              <form class="inline-form" action="{{ url_for('cart_update') }}" method="POST">
+                <input type="hidden" name="product_id" value="{{ l.product.id }}">
+                <input type="number" name="qty" value="{{ l.qty }}" min="1" max="50" aria-label="Quantity">
+                <button class="btn btn-light btn-small" name="action" value="update" type="submit">Update</button>
+                <button class="btn btn-danger btn-small" name="action" value="remove" type="submit">Remove</button>
+              </form>
+            </td>
+            <td class="num">{{ l.total|ugx }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      <div class="summary">
+        <div><span>Subtotal</span><span>{{ cart.subtotal|ugx }}</span></div>
+        <div><span>Delivery</span><span>{{ delivery_fee|ugx }}</span></div>
+        <div class="total"><span>Total</span><span>{{ (cart.subtotal + delivery_fee)|ugx }}</span></div>
+      </div>
+      <div class="actions" style="justify-content:flex-end">
+        <form action="{{ url_for('cart_clear') }}" method="POST"><button class="btn btn-danger" type="submit">Clear cart</button></form>
+        <a class="btn" href="{{ url_for('checkout') }}">Checkout</a>
+      </div>
+    {% else %}
+      <div class="empty">Your cart is empty. <a class="tag" href="{{ url_for('shops') }}">Browse shops</a></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
