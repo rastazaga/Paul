@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}My shop | {{ site_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <div class="order-head">
+      <div>
+        <h1>{{ vendor.name }}</h1>
+        {% if vendor.is_approved %}<span class="tag">Live</span>{% else %}<span class="tag warn">Waiting for approval</span>{% endif %}
+        {% if vendor.is_open %}<span class="tag">Open</span>{% else %}<span class="tag off">Closed</span>{% endif %}
+      </div>
+      <div class="actions" style="margin:0">
+        <a class="btn btn-light" href="{{ url_for('shop_detail', slug=vendor.slug) }}">View shop page</a>
+        <form action="{{ url_for('vendor_toggle_open') }}" method="POST">
+          <button class="btn" type="submit">{{ 'Close shop' if vendor.is_open else 'Open shop' }}</button>
+        </form>
+      </div>
+    </div>
+
+    <h2 style="margin-top:36px">Active orders</h2>
+    {% for o in active %}
+      <div class="order-row">
+        <div class="order-head">
+          <strong>{{ o.reference }} &middot; {{ o.customer.name }}</strong>
+          <span class="tag warn">{{ o.status_label }}</span>
+        </div>
+        <p>{% for i in o.items %}{{ i.quantity }} &times; {{ i.name }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+        <p class="muted">{{ o.total|ugx }} &middot; {{ payment_methods.get(o.payment_method) }} &middot; {{ o.delivery_address }} &middot; {{ o.phone }}</p>
+        {% if o.notes %}<p class="muted">Note: {{ o.notes }}</p>{% endif %}
+        <div class="actions">
+          {% for s in next_statuses.get(o.status, []) %}
+            <form action="{{ url_for('vendor_order_status', order_id=o.id) }}" method="POST">
+              <input type="hidden" name="status" value="{{ s }}">
+              <button class="btn btn-small {% if s == 'cancelled' %}btn-danger{% endif %}" type="submit">{{ status_labels[s] }}</button>
+            </form>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty">No active orders right now.</div>
+    {% endfor %}
+
+    <h2 style="margin-top:36px">Products</h2>
+    <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Product</th><th class="num">Price</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for p in vendor.products %}
+        <tr>
+          <td>{{ p.name }}</td>
+          <td class="num">{{ p.price|ugx }}{% if p.unit %} / {{ p.unit }}{% endif %}</td>
+          <td>{% if p.in_stock %}<span class="tag">In stock</span>{% else %}<span class="tag off">Hidden</span>{% endif %}</td>
+          <td class="num">
+            <form class="inline-form" action="{{ url_for('vendor_toggle_product', product_id=p.id) }}" method="POST">
+              <button class="btn btn-light btn-small" type="submit">{{ 'Mark out of stock' if p.in_stock else 'Mark in stock' }}</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">No products yet. Add your first one below.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+
+    <form class="card" action="{{ url_for('vendor_add_product') }}" method="POST" style="margin-top:24px">
+      <h3>Add a product</h3>
+      <div class="row">
+        <div><label for="pname">Name</label><input id="pname" name="name" required></div>
+        <div><label for="pprice">Price (UGX)</label><input id="pprice" name="price" type="number" min="0" step="100" required></div>
+      </div>
+      <div class="row">
+        <div><label for="punit">Unit</label><input id="punit" name="unit" placeholder="kg, bunch, plate"></div>
+        <div><label for="pimage">Photo link (optional)</label><input id="pimage" name="image_url" placeholder="https://..."></div>
+      </div>
+      <label for="pdesc">Description (optional)</label>
+      <input id="pdesc" name="description">
+      <button class="btn" type="submit" style="width:auto">Add product</button>
+    </form>
+
+    {% if past %}
+      <h2 style="margin-top:36px">Recent completed orders</h2>
+      {% for o in past %}
+        <div class="order-row"><div class="order-head"><strong>{{ o.reference }} &middot; {{ o.customer.name }}</strong>
+          <span class="tag {% if o.status == 'cancelled' %}off{% endif %}">{{ o.status_label }}</span></div>
+          <span class="muted">{{ o.total|ugx }} &middot; {{ o.date_placed.strftime('%d %b %Y') }}</span></div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
