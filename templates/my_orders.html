@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}My orders | {{ site_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>My orders</h1>
+    {% for o in orders %}
+      <a class="order-row" href="{{ url_for('order_detail', order_id=o.id) }}" style="display:block">
+        <div class="order-head">
+          <strong>{{ o.reference }} &middot; {{ o.vendor.name }}</strong>
+          <span class="tag {% if o.status == 'cancelled' %}off{% elif o.status != 'delivered' %}warn{% endif %}">{{ o.status_label }}</span>
+        </div>
+        <span class="muted">{{ o.date_placed.strftime('%d %b %Y') }} &middot; {{ o.items|length }} item(s) &middot; {{ o.total|ugx }}</span>
+      </a>
+    {% else %}
+      <div class="empty">You have not ordered anything yet. <a class="tag" href="{{ url_for('shops') }}">Browse shops</a></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
