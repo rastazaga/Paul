@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="wrap">
+    <h1>Fresh food and everyday goods, delivered across Kampala.</h1>
+    <p>Order from local shops, farms and kitchens. Pay with cash or mobile money when it arrives.</p>
+    <form class="search-bar" action="{{ url_for('shops') }}" method="GET">
+      <input type="text" name="q" placeholder="Search shops, food or area">
+      <button class="btn" type="submit">Search</button>
+    </form>
+    <div class="chips">
+      {% for c in vendor_categories %}
+        <a class="chip" href="{{ url_for('shops', category=c) }}">{{ c }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Open now</h2>
+    {% if featured %}
+      <div class="grid">
+        {% for v in featured %}{% include "_shop_card.html" %}{% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No shops are open yet. Be the first to <a class="tag" href="{{ url_for('vendor_apply') }}">open a shop</a>.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <h2>Have something to sell?</h2>
+    <p>List your shop, add your products and start receiving orders from customers near you.</p>
+    <a class="btn" href="{{ url_for('vendor_apply') }}">Start selling</a>
+  </div>
+</section>
+{% endblock %}
