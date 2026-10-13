@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ vendor.name }} | {{ site_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    {% if not vendor.is_approved %}
+      <div class="flash flash-error" style="margin-bottom:20px">This shop is waiting for approval. Only you and the admin can see it.</div>
+    {% endif %}
+    <h1>{{ vendor.name }}</h1>
+    <p class="muted">{{ vendor.area or 'Kampala' }}{% if vendor.category %} &middot; {{ vendor.category }}{% endif %}
+      {% if vendor.phone %} &middot; {{ vendor.phone }}{% endif %}</p>
+    {% if vendor.description %}<p style="max-width:640px;margin-top:10px">{{ vendor.description }}</p>{% endif %}
+    <p style="margin:12px 0 28px">
+      {% if vendor.is_open %}<span class="tag">Open for orders</span>{% else %}<span class="tag off">Closed right now</span>{% endif %}
+    </p>
+
+    {% if products %}
+      <div class="grid">
+        {% for p in products %}
+        <div class="product-card">
+          <div class="thumb">{% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.name }}">{% else %}{{ p.name[0]|upper }}{% endif %}</div>
+          <div class="card-body">
+            <h3>{{ p.name }}</h3>
+            {% if p.description %}<span class="muted">{{ p.description }}</span>{% endif %}
+            <span class="price">{{ p.price|ugx }}{% if p.unit %} <span class="muted">/ {{ p.unit }}</span>{% endif %}</span>
+            {% if p.in_stock and vendor.is_open and vendor.is_approved %}
+              <form class="add-form" action="{{ url_for('cart_add') }}" method="POST">
+                <input type="hidden" name="product_id" value="{{ p.id }}">
+                <input type="number" name="qty" value="1" min="1" max="50" aria-label="Quantity">
+                <button class="btn btn-small" type="submit">Add to cart</button>
+              </form>
+            {% else %}
+              <span class="tag off" style="margin-top:auto">Unavailable</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">This shop has not added any products yet.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
