@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ order.reference }} | {{ site_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap">
+    <h1>{{ order.reference }}</h1>
+    <p class="muted" style="margin-bottom:20px">From <strong>{{ order.vendor.name }}</strong> &middot; {{ order.date_placed.strftime('%d %b %Y, %H:%M') }} UTC</p>
+    <p style="margin-bottom:24px">
+      <span class="tag {% if order.status == 'cancelled' %}off{% elif order.status != 'delivered' %}warn{% endif %}">{{ order.status_label }}</span>
+      <span class="tag">{{ payment_methods.get(order.payment_method, order.payment_method) }} &middot; {{ order.payment_status }}</span>
+    </p>
+    <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Total</th></tr></thead>
+      <tbody>
+      {% for i in order.items %}
+        <tr><td>{{ i.name }}</td><td class="num">{{ i.unit_price|ugx }}</td><td class="num">{{ i.quantity }}</td><td class="num">{{ i.line_total|ugx }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <div class="summary">
+      <div><span>Subtotal</span><span>{{ order.subtotal|ugx }}</span></div>
+      <div><span>Delivery</span><span>{{ order.delivery_fee|ugx }}</span></div>
+      <div class="total"><span>Total</span><span>{{ order.total|ugx }}</span></div>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <h3>Delivering to</h3>
+      <p>{{ order.delivery_address }}<br>{{ order.phone }}</p>
+      {% if order.notes %}<p class="muted" style="margin-top:8px">Note: {{ order.notes }}</p>{% endif %}
+    </div>
+    {% if current_user.id == order.customer_id and order.status == 'placed' %}
+      <form action="{{ url_for('cancel_order', order_id=order.id) }}" method="POST" style="margin-top:20px">
+        <button class="btn btn-danger" type="submit">Cancel order</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
