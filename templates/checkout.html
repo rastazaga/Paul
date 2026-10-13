@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Checkout | {{ site_name }}{% endblock %}
+{% block content %}
+<section>
+  <div class="wrap two-col">
+    <form class="card" method="POST">
+      <h2>Delivery details</h2>
+      <label for="delivery_address">Delivery address</label>
+      <input id="delivery_address" name="delivery_address" value="{{ user.default_address or '' }}" placeholder="Street, area, landmark" required>
+      <label for="phone">Phone number</label>
+      <input id="phone" name="phone" value="{{ user.phone or '' }}" placeholder="07XX XXX XXX" required>
+      <label for="notes">Notes for the shop (optional)</label>
+      <textarea id="notes" name="notes" placeholder="Gate colour, ripeness, spice level..."></textarea>
+      <label for="payment_method">How will you pay?</label>
+      <select id="payment_method" name="payment_method">
+        {% for key, label in payment_methods.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn" type="submit" style="margin-top:22px">Place order</button>
+    </form>
+
+    <div class="card">
+      <h2>{{ cart.vendor.name }}</h2>
+      {% for l in cart.lines %}
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0">
+          <span>{{ l.qty }} &times; {{ l.product.name }}</span><span>{{ l.total|ugx }}</span>
+        </div>
+      {% endfor %}
+      <div class="summary" style="margin-left:0;max-width:none">
+        <div><span>Subtotal</span><span>{{ cart.subtotal|ugx }}</span></div>
+        <div><span>Delivery</span><span>{{ delivery_fee|ugx }}</span></div>
+        <div class="total"><span>Total</span><span>{{ (cart.subtotal + delivery_fee)|ugx }}</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
