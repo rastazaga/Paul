@@ -1,0 +1,10 @@
+<a href="{{ url_for('shop_detail', slug=v.slug) }}" class="shop-card">
+  <div class="thumb">{% if v.image_url %}<img src="{{ v.image_url }}" alt="{{ v.name }}">{% else %}{{ v.name[0]|upper }}{% endif %}</div>
+  <div class="card-body">
+    <h3>{{ v.name }}</h3>
+    <span class="muted">{{ v.area or 'Kampala' }}{% if v.category %} &middot; {{ v.category }}{% endif %}</span>
+    <div style="margin-top:8px">
+      {% if v.is_open %}<span class="tag">Open</span>{% else %}<span class="tag off">Closed</span>{% endif %}
+    </div>
+  </div>
+</a>
